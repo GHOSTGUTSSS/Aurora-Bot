@@ -1,0 +1,62 @@
+import discord
+from discord.ext import commands
+import random
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Database-like structure to store user and character data
+users_data = {}
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+
+# Command to register a new character
+@bot.command()
+async def register(ctx, character_name, character_post):
+    user = ctx.author.name
+    if user not in users_data:
+        users_data[user] = []
+
+    users_data[user].append({
+        'character_name': character_name,
+        'character_post': character_post,
+        'events': []
+    })
+    await ctx.send(f'{character_name} registered for {user}!')
+
+# Command to log an event
+@bot.command()
+async def log_event(ctx, character_name, event_type, *, details):
+    user = ctx.author.name
+    if user not in users_data:
+        await ctx.send(f'User {user} has no registered characters.')
+        return
+
+    for character in users_data[user]:
+        if character['character_name'] == character_name:
+            character['events'].append({
+                'event_type': event_type,
+                'details': details
+            })
+            await ctx.send(f'Event logged for {character_name}.')
+            return
+
+    await ctx.send(f'Character {character_name} not found for user {user}.')
+
+# Command to roll a 20-sided die
+@bot.command()
+async def roll_d20(ctx):
+    result = random.randint(1, 20)
+    await ctx.send(f'{ctx.author.name} rolled a D20: {result}')
+
+# Command to roll a 100-sided die
+@bot.command()
+async def roll_d100(ctx):
+    result = random.randint(1, 100)
+    await ctx.send(f'{ctx.author.name} rolled a D100: {result}')
+
+bot.run('MTIzODU3NzY5OTQwNDkwNjU5Nw.GCzQWd.O7gvLBtI96-yYYXYuTxmnFzei7UQzDlFJsiW5A')
